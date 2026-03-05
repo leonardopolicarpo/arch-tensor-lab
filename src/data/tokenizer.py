@@ -17,8 +17,8 @@ class Tokenizer:
   def encode(self, string: str) -> list[int]:
     return [self.string_to_index[character] for character in string]
 
-  def decode(self, list_of_integers: list[int]) -> str:
-    pass
+  def decode(self, list_of_indices: list[int]) -> str:
+    return ''.join([self.index_to_string[index] for index in list_of_indices])
 
   def save_data(self, output_path: str) -> None:
     pass
