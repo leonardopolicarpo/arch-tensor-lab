@@ -1,5 +1,7 @@
 # Data Ingestion and Tokenization
 
+> 🌐 **Available in other languages:** [Português (Brasil)](../pt-br/01-data-ingestion-and-tokenization.md)
+
 This document details the first stage of the **arch-tensor-lab**, which involves creating a synthetic dataset based on the Arch Linux ecosystem and implementing a character-level Tokenizer.
 
 ---
