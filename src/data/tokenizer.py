@@ -15,7 +15,7 @@ class Tokenizer:
     self.index_to_string = { index:character for index,character in enumerate(self.characters) }
 
   def encode(self, string: str) -> list[int]:
-    pass
+    return [self.string_to_index[character] for character in string]
 
   def decode(self, list_of_integers: list[int]) -> str:
     pass
