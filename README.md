@@ -44,7 +44,7 @@ If you are in an Arch Linux environment (or any Linux distro) and want to replic
 
 1. **Clone the repository:**
 ```bash
-git clone [https://github.com/leonardopolicarpo/arch-tensor-lab.git](https://github.com/leonardopolicarpo/arch-tensor-lab.git)
+git clone https://github.com/leonardopolicarpo/arch-tensor-lab.git
 cd arch-tensor-lab
 ```
 
@@ -53,7 +53,7 @@ cd arch-tensor-lab
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install torch --index-url [https://download.pytorch.org/whl/cpu](https://download.pytorch.org/whl/cpu)
+pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -e ".[dev]"
 ```
 
