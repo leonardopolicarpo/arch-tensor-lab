@@ -10,7 +10,16 @@ authors = [
 ]
 description = "From-scratch LLM architecture experiments. A local CPU-first environment to understand the math behind Transformers, tokenization, and backpropagation"
 readme = "README.md"
-requires-python = ">=3."
+requires-python = ">=3.10"
 dependencies = [
-  "torch"
+  "torch",
+  "numpy"
 ]
+
+[project.optional-dependencies]
+dev = [
+  "pytest"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
