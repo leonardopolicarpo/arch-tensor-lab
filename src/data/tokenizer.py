@@ -1,4 +1,5 @@
 import os
+import torch
 
 class Tokenizer:
   def __init__(self, raw_text_path: str) -> None:
@@ -21,4 +22,13 @@ class Tokenizer:
     return ''.join([self.index_to_string[index] for index in list_of_indices])
 
   def save_data(self, output_path: str) -> None:
-    pass
+    tokens = self.encode(self.text)
+
+    # long (int64) standard for indeces in embeddings
+    data_tensor = torch.tensor(tokens, dtype=torch.long)
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    torch.save(data_tensor, output_path)
+
+    print(f"Vocabulary: {self.vocabulary_size} characters")
+    print(f"Binary file saved in: {output_path}")
