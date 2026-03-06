@@ -15,13 +15,17 @@ Meu objetivo é pedagógico e braçal: entender a matemática, a engenharia de d
 
 ---
 
-## 🛠️ Status Atual: Fase 01 - Ingestão e Tokenização
+## 🛠️ Status Atual
 
-Até agora, o laboratório já conta com:
-- **Dataset Sintético:** ~3.5MB de comandos Bash e lógica do ecossistema Arch Linux para treinamento.
-- **Character-Level Tokenizer:** Um tradutor que mapeia caracteres únicos para índices numéricos (IDs) de forma determinística.
-- **Pipeline de Dados:** Serialização de texto para tensores binários (`.pt`) otimizados para o PyTorch.
-- **Testes Unitários:** Suite de testes com `pytest` garantindo a integridade do processo de encode/decode.
+### ✅ Fase 01: Ingestão e Tokenização
+- **Dataset Sintético:** ~3.5MB de comandos Bash e lógica do Arch Linux.
+- **Character-Level Tokenizer:** Mapeamento determinístico de caracteres para IDs.
+- **Testes Unitários:** Suite completa com `pytest`.
+
+### ✅ Fase 02: DataLoader e Dinâmica de Batches
+- **Matriz de Treino:** Implementação de lógica de fatiamento ($32 \times 64$).
+- **Sorteio Semântico:** Uso de `torch.randint` com margens de segurança para evitar estouro de índice.
+- **Orquestração:** Script `run.sh` e `main.py` para automação do pipeline.
 
 ---
 
@@ -66,8 +70,10 @@ pytest
 
 ## 📖 Documentação Detalhada
 
-Para uma explicação técnica de cada etapa, confira a pasta `/docs`:
-- [01: Ingestão de Dados e Tokenização (PT-BR)](docs/pt-br/01-data-ingestion-and-tokenization.md)
+Confira a explicação técnica de cada etapa:
+
+- **01: Ingestão e Tokenização** — [Português](docs/pt-br/01-data-ingestion-and-tokenization.md) | [English](docs/en/01-data-ingestion-and-tokenization.md)
+- **02: DataLoader e Batches** — [Português](docs/pt-br/02-dataloader.md) | [English](docs/en/02-dataloader.md)
 
 ---
 
