@@ -17,7 +17,12 @@ class DataLoader:
     self.train_data = data[:n]
     self.val_data = data[n:]
 
-  def get_batch(self, split: str = 'train') -> None:
+  def get_batch(self, split: str = 'train') -> tuple:
     data = self.train_data if split == 'train' else self.val_data
 
-    print(f"data: {data}")
+    start_indices = torch.randint(len(data) - self.block_size - 1, (self.batch_size,))
+
+    x = torch.stack([data[index:index+self.block_size] for index in start_indices])
+    y = torch.stack([data[index+1:index+self.block_size+1] for index in start_indices])
+
+    return x, y

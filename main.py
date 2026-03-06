@@ -25,7 +25,10 @@ def main():
     batch_size=32,
     block_size=64
   )
-  loader.get_batch()
+  x, y = loader.get_batch(split="train")
+
+  print(f"Batch X shape: {x.shape}")
+  print(f"Batch Y shape: {y.shape}")
 
 if __name__ == "__main__":
   main()
