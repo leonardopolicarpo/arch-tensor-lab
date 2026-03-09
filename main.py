@@ -40,9 +40,12 @@ def main():
     embedding_dimension=128
   )
 
-  logits = model(x)
+  logits, loss = model(x, y)
   
   print(f"Logits shape (output): {logits.shape}")
+
+  if loss is not None:
+    print(f"[*] Initial Loss: {loss.item():.4f}")
 
 if __name__ == "__main__":
   main()
