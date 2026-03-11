@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from src.model.attention import Head
+from src.model.attention import MultiHeadAttention
 
 class LanguageModel(nn.Module):
   def __init__(self, vocabulary_size: int, embedding_dimension: int, block_size: int) -> None:
@@ -13,8 +13,12 @@ class LanguageModel(nn.Module):
       embedding_dim=embedding_dimension
     )
 
-    self.attention_head = Head(
-      head_size=embedding_dimension,
+    num_heads = 4
+    head_size = embedding_dimension // num_heads
+
+    self.attention_heads = MultiHeadAttention(
+      num_heads=num_heads,
+      head_size=head_size,
       embedding_dimension=embedding_dimension,
       block_size=block_size
     )
@@ -31,7 +35,7 @@ class LanguageModel(nn.Module):
   ) -> tuple[torch.Tensor, torch.Tensor | None]:
     token_embedding: torch.Tensor = self.token_embedding_table(input_indices)
 
-    context_aware_embedding: torch.Tensor = self.attention_head(token_embedding)
+    context_aware_embedding: torch.Tensor = self.attention_heads(token_embedding)
 
     logits: torch.Tensor = self.language_modeling_head(context_aware_embedding)
 
