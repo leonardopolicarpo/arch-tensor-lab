@@ -53,7 +53,7 @@ def main():
   vocabulary_size = tokenizer.vocabulary_size
   loader = DataLoader(data_path=processed_data_path, batch_size=32, block_size=64)
   
-  model = LanguageModel(vocabulary_size, embedding_dimension=128)
+  model = LanguageModel(vocabulary_size, embedding_dimension=128, block_size=64)
 
   if os.path.exists(model_weights_path):
     print(f"\n[*] Cérebro encontrado! Carregando pesos de: {model_weights_path}")
