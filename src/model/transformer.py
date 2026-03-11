@@ -2,6 +2,33 @@ import torch
 import torch.nn as nn
 from src.model.attention import MultiHeadAttention
 
+class FeedForward(nn.Module):
+  def __init__(self, embedding_dimension: int):
+    super().__init__()
+    self.net = nn.Sequential(
+      nn.Linear(embedding_dimension, 4 * embedding_dimension),
+      nn.ReLU(),
+      nn.Linear(4 * embedding_dimension, embedding_dimension)
+    )
+
+  def forward(self, x: torch.Tensor) -> torch.Tensor:
+    return self.net(x)
+
+class Block(nn.Module):
+  def __init__(self, embedding_dimension: int, num_heads: int, block_size: int):
+    super().__init__()
+    head_size = embedding_dimension // num_heads
+    self.attention = MultiHeadAttention(num_heads, head_size, embedding_dimension, block_size)
+    self.feed_forward = FeedForward(embedding_dimension)
+    
+    self.ln1 = nn.LayerNorm(embedding_dimension)
+    self.ln2 = nn.LayerNorm(embedding_dimension)
+
+  def forward(self, x: torch.Tensor) -> torch.Tensor:
+    x = x + self.attention(self.ln1(x))
+    x = x + self.feed_forward(self.ln2(x))
+    return x
+
 class LanguageModel(nn.Module):
   def __init__(self, vocabulary_size: int, embedding_dimension: int, block_size: int) -> None:
     super().__init__()
@@ -13,14 +40,11 @@ class LanguageModel(nn.Module):
       embedding_dim=embedding_dimension
     )
 
-    num_heads = 4
-    head_size = embedding_dimension // num_heads
-
-    self.attention_heads = MultiHeadAttention(
-      num_heads=num_heads,
-      head_size=head_size,
-      embedding_dimension=embedding_dimension,
-      block_size=block_size
+    self.blocks = nn.Sequential(
+      Block(embedding_dimension, num_heads=4, block_size=block_size),
+      Block(embedding_dimension, num_heads=4, block_size=block_size),
+      Block(embedding_dimension, num_heads=4, block_size=block_size),
+      nn.LayerNorm(embedding_dimension)
     )
 
     self.language_modeling_head = nn.Linear(
@@ -35,7 +59,7 @@ class LanguageModel(nn.Module):
   ) -> tuple[torch.Tensor, torch.Tensor | None]:
     token_embedding: torch.Tensor = self.token_embedding_table(input_indices)
 
-    context_aware_embedding: torch.Tensor = self.attention_heads(token_embedding)
+    context_aware_embedding: torch.Tensor = self.blocks(token_embedding)
 
     logits: torch.Tensor = self.language_modeling_head(context_aware_embedding)
 
