@@ -30,3 +30,27 @@ Ao chamar o inicializador da classe mãe (**nn.Module**), o modelo é registrado
 * A solução: A camada **nn.Linear** (*language_modeling_head*) atua como um tradutor / espécie de funil, onde aplica uma transformação linear (y = xA^T + b) para projetar o espaço vetorial interno de volta para o espaço do vocabulário.
 
 * Ela recebe o vetor de 128 dimensões gerado pelo Embedding e o transforma até ter 62 números, sendo eles chamados de *logits*, representam a 'força do chute' (a nota) da IA para cada um dos caracteres possíveis. O que tiver maior nota é a predição de qual a próxima letra da sequência.
+
+## 3. O Fluxo de Dados (**forward**) e o Cálculo de Erro
+
+O método **forward** recebe os IDs brutos e os transforma em predições, calculando o quão longe a IA está da resposta correta.
+
+### 3.1. A Viagem do Tensor (o caminho de ida)
+
+1. Entrada: o método recebe *input_indices* (contexto **X**), sendo o formato dessa matriz bidimensional: **[batch_size, sequence_length]** (ex: **[32, 64]**)
+
+2. Ganho de profundidade: Ao passar **X** pela *token_embedding_table*, cada número simples vira um vetor de 128 dimensões. O tensor se transforma num cubo 3D com formato **[batch_size, sequence_length, embedding_dimension]**
+
+3. 'Afunilamento' para resposta: Esse 'cubo' passa pela camada *Linear* (**language_modeling_head**), onde ela comprime essa dimensão de volta para o tamanho do vocabulário (62). O formato final das notas de predição (**logits**) é **[batch_size, sequence_length, vocabulary_size]**
+
+### 3.2. A Matemática da Perda (loss calculation)
+
+Se passar a matriz **targets** (o gabarito **Y**) para o **forward**, a rede vai calcular a sua 'nota de prova', que é chamada de Perda.
+
+- O problema: A função de avaliação do PyTorch exige uma lista bidimensional contínua, e nossas matrizes foram geradas 3D **[B, T, C]**
+
+- A solução: uso o método *view()* para reestruturar o tensor sem alterar os dados na memória, pegando as 32 sequências de comandos (cada uma com 64 caracteres de comprimento) e empilhamos tudo numa única fila contínua
+  - *logits* vira **[batch_size * sequence_length, channels]** -> **[2048, 62]**
+  - *targets* vira **[batch_size * sequence_length]** -> **[2048]**
+
+- *cross_entropy*: com essas matrizes o PyTorch compara as 62 probabilidades geradas pela rede com a resposta correta e nos devolve um número escalar (ex: 4.24), onde quanto menor esse número, mais inteligente a rede está ficando, sendo que uma *Loss* alta significa que a rede está chutando aleatoriamente
