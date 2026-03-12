@@ -32,18 +32,18 @@ def load_agent(weights_path, raw_data_path):
   return model, tokenizer
 
 def responder(model, tokenizer, prompt_usuario, max_tokens=150):
-    full_prompt = f"[User]: {prompt_usuario}\n[Agent]:"
-    
-    context = torch.tensor([tokenizer.encode(full_prompt)], dtype=torch.long)
-    
-    generated = model.generate(context, max_new_tokens=max_tokens)
-    texto_gerado = tokenizer.decode(generated[0].tolist())
+  full_prompt = f"[User]: {prompt_usuario}\n[Agent]:"
+  
+  context = torch.tensor([tokenizer.encode(full_prompt)], dtype=torch.long)
+  
+  generated = model.generate(context, max_new_tokens=max_tokens)
+  texto_gerado = tokenizer.decode(generated[0].tolist())
 
-    resposta_pura = texto_gerado[len(full_prompt):]
-    if "[User]" in resposta_pura:
-      resposta_pura = resposta_pura.split("[User]")[0]
-        
-    return resposta_pura.strip()
+  resposta_pura = texto_gerado[len(full_prompt):]
+  if "[User]" in resposta_pura:
+    resposta_pura = resposta_pura.split("[User]")[0]
+      
+  return resposta_pura.strip()
 
 def main():
   weights = "data/processed/agent_v2_weights.pt"
