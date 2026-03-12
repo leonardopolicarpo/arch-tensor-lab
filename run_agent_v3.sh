@@ -10,7 +10,7 @@ RESET=$(tput sgr0)
 clear
 
 echo "${AZUL}---------------------------------------------------${RESET}"
-echo "  ${NEGRITO}${VERMELHO}Arch-Tensor-Lab: Motor Agent V1 (Base)${RESET}"
+echo "  ${NEGRITO}${VERMELHO}Arch-Tensor-Lab: Motor Agent V3${RESET}"
 echo "${AZUL}---------------------------------------------------${RESET}"
 echo ""
 
@@ -31,8 +31,8 @@ fi
 
 echo ""
 echo "${VERDE}✔ Configurações carregadas!${RESET}"
-echo "Dataset : ${AZUL}chat.txt${RESET}"
-echo "Modelo  : ${AZUL}agent_v1_weights.pt${RESET}"
+echo "Dataset : ${AZUL}chat_pro.txt${RESET}"
+echo "Modelo  : ${AZUL}agent_v3_weights.pt${RESET}"
 
 if [ -n "$TRAIN_FLAG" ]; then
   echo "Ação    : ${VERMELHO}TREINAR (${PASSOS} passos)${RESET}"
@@ -43,4 +43,4 @@ fi
 
 echo "---------------------------------------------------"
 
-python main.py -f "chat.txt" -t "agent_v1.pt" -m "agent_v1" $TRAIN_FLAG $STEPS_FLAG
+python main.py -f "chat_pro.txt" -t "agent_v3.pt" -m "agent_v3" $TRAIN_FLAG $STEPS_FLAG

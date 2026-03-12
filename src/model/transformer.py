@@ -93,15 +93,30 @@ class LanguageModel(nn.Module):
       loss = nn.functional.cross_entropy(logits_view, targets_view)
 
     return logits, loss
-  
-  def generate(self, input_indices: torch.Tensor, max_new_tokens: int) -> torch.Tensor:
+
+  def generate(
+    self, 
+    input_indices: torch.Tensor, 
+    max_new_tokens: int, 
+    temperature: float = 1.0, 
+    top_k: int | None = None
+  ) -> torch.Tensor:
     for _ in range(max_new_tokens):
       input_cond = input_indices[:, -self.block_size:] 
       
       logits, _ = self(input_cond)
       
       next_token_logits: torch.Tensor = logits[:, -1, :]
+      
+      if temperature != 1.0 and temperature > 0.0:
+        next_token_logits = next_token_logits / temperature
+      
+      if top_k is not None:
+        v, _ = torch.topk(next_token_logits, min(top_k, next_token_logits.size(-1)))
+        next_token_logits[next_token_logits < v[:, [-1]]] = -float('Inf')
+          
       probabilities: torch.Tensor = nn.functional.softmax(next_token_logits, dim=-1)
+      
       next_token: torch.Tensor = torch.multinomial(probabilities, num_samples=1)
       
       input_indices = torch.cat((input_indices, next_token), dim=1)

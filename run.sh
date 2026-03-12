@@ -16,39 +16,39 @@ echo ""
 
 echo "${AMARELO}>> Configuração do Projeto${RESET}"
 
-read -p "${NEGRITO}Nome do Dataset${RESET} (press enter for default)${NEGRITO}:${RESET} " DATASET
+read -p "${NEGRITO}Nome do Dataset${RESET} [chat_pro]: " DATASET
+DATASET=${DATASET:-"chat_pro"}
 
-if [ -z "$DATASET" ]; then
-  echo "bash_commands selecionado"
-  DATASET="bash_commands"
-fi
+read -p "${NEGRITO}Nome do Binário (.pt)${RESET} [agent_v3]: " BINARIO
+BINARIO=${BINARIO:-"agent_v3"}
 
-read -p "${NEGRITO}Nome do Binário de Destino${RESET} (press enter for default)${NEGRITO}:${RESET} " BINARIO
+read -p "${NEGRITO}Nome do Modelo/Pesos${RESET} [agent_v3]: " MODELO
+MODELO=${MODELO:-"agent_v3"}
 
-if [ -z "$BINARIO" ]; then
-  echo "bash_data selecionado"
-  BINARIO="bash_data"
-fi
-
-read -p "${NEGRITO}Nome do Modelo${RESET} (press enter to match dataset)${NEGRITO}:${RESET} " MODELO
-
-if [ -z "$MODELO" ]; then
-  MODELO="$DATASET"
-  echo "Modelo nomeado como: $MODELO"
-fi
-
-read -p "${NEGRITO}Deseja treinar o modelo agora?${RESET} (s/N)${NEGRITO}:${RESET} " TREINAR
+read -p "${NEGRITO}Deseja treinar o modelo agora?${RESET} (s/N): " TREINAR
 
 TRAIN_FLAG=""
+STEPS_FLAG=""
+
 if [[ "$TREINAR" == "s" || "$TREINAR" == "S" ]]; then
   TRAIN_FLAG="--train"
+  
+  read -p "${NEGRITO}Quantidade de Passos${RESET} [2000]: " PASSOS
+  PASSOS=${PASSOS:-2000}
+  STEPS_FLAG="--steps $PASSOS"
 fi
 
 echo ""
-echo "${VERDE}✔ Configurações salvas com sucesso!${RESET}"
-echo "Processando: ${AZUL}$DATASET${RESET} -> ${AZUL}$BINARIO${RESET}"
-echo "Dataset: ${AZUL}$DATASET${RESET} | Binário: ${AZUL}$BINARIO${RESET} | Pesos: ${AZUL}${MODELO}_weights.pt${RESET}"
-echo "Modo de Treino: ${AZUL}$(if [ -n "$TRAIN_FLAG" ]; then echo "ATIVADO"; else echo "DESATIVADO (Apenas Geração)"; fi)${RESET}"
+echo "${VERDE}✔ Configurações confirmadas!${RESET}"
+echo "Dataset: ${AZUL}${DATASET}.txt${RESET}"
+echo "Binário: ${AZUL}${BINARIO}.pt${RESET}"
+echo "Pesos  : ${AZUL}${MODELO}_weights.pt${RESET}"
+
+if [ -n "$TRAIN_FLAG" ]; then
+  echo "Modo   : ${VERMELHO}TREINAMENTO ATIVADO ($PASSOS passos)${RESET}"
+else
+  echo "Modo   : ${AZUL}APENAS INFERÊNCIA (Geração)${RESET}"
+fi
 echo "---------------------------------------------------"
 
-python main.py -f "${DATASET}.txt" -t "${BINARIO}.pt" -m "$MODELO" $TRAIN_FLAG
+python main.py -f "${DATASET}.txt" -t "${BINARIO}.pt" -m "$MODELO" $TRAIN_FLAG $STEPS_FLAG
