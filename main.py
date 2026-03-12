@@ -10,6 +10,8 @@ def parse_arguments():
   parser = argparse.ArgumentParser()
   parser.add_argument('--file', '-f', type=str, default='bash_commands.txt')
   parser.add_argument('--target', '-t', type=str, default='bash_data.pt')
+  parser.add_argument('--model', '-m', type=str, default='bash_model')
+  parser.add_argument('--train', action='store_true', help='Executar loop de treinamento')
   return parser.parse_args()
 
 def generate_sample(model: LanguageModel, tokenizer: Tokenizer, max_new_tokens: int = 100) -> str:
@@ -41,9 +43,14 @@ def train_model(model: LanguageModel, loader: DataLoader, steps: int = 1000, lr:
 def main():
   args = parse_arguments()
   
+  BLOCK_SIZE = 128
+  EMBED_DIM = 256
+  N_HEADS = 8
+  N_LAYERS = 6
+
   raw_data_path = f"data/raw/{args.file}"
   processed_data_path = f"data/processed/{args.target}"
-  model_weights_path = "data/processed/bash_model_weights.pt"
+  model_weights_path = f"data/processed/{args.model}_weights.pt"
 
   tokenizer = Tokenizer(raw_text_path=raw_data_path)
   if not os.path.exists(processed_data_path):
@@ -51,23 +58,34 @@ def main():
     tokenizer.save_data(processed_data_path)
   
   vocabulary_size = tokenizer.vocabulary_size
-  loader = DataLoader(data_path=processed_data_path, batch_size=32, block_size=64)
+  loader = DataLoader(data_path=processed_data_path, batch_size=32, block_size=BLOCK_SIZE)
   
-  model = LanguageModel(vocabulary_size, embedding_dimension=128, block_size=64)
+  model = LanguageModel(
+    vocabulary_size,
+    embedding_dimension=EMBED_DIM,
+    block_size=BLOCK_SIZE,
+    num_heads=N_HEADS,
+    num_layers=N_LAYERS
+  )
 
   if os.path.exists(model_weights_path):
     print(f"\n[*] Cérebro encontrado! Carregando pesos de: {model_weights_path}")
     model.load_state_dict(torch.load(model_weights_path))
   else:
-    print("\n[*] Teste de Geração (Modelo Não Treinado) ---")
+    print("\n[*] Cérebro não encontrado. Inicializando com pesos aleatórios.")
+
+  if args.train:
+    print("\n[*] Teste de Geração (Antes do treino) ---")
     print(generate_sample(model, tokenizer, max_new_tokens=100))
     
     train_model(model, loader, steps=1000)
     
-    print(f"\n[*] Salvando os pesos do modelo em {model_weights_path}...")
+    print(f"\n[*] Salvando os novos pesos em {model_weights_path}...")
     torch.save(model.state_dict(), model_weights_path)
+  else:
+    print("\n[*] Modo de inferência. Pulando treinamento...")
 
-  print("\n[*] --- Teste de Geração (Modelo TREINADO) ---")
+  print("\n[*] --- Teste de Geração Final ---")
   print(generate_sample(model, tokenizer, max_new_tokens=200))
 
 if __name__ == "__main__":

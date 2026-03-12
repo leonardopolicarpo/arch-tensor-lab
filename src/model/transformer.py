@@ -30,7 +30,14 @@ class Block(nn.Module):
     return x
 
 class LanguageModel(nn.Module):
-  def __init__(self, vocabulary_size: int, embedding_dimension: int, block_size: int) -> None:
+  def __init__(
+      self,
+      vocabulary_size: int,
+      embedding_dimension: int = 256,
+      block_size: int = 128,
+      num_heads: int = 8,
+      num_layers: int = 6
+    ) -> None:
     super().__init__()
 
     self.block_size = block_size
@@ -40,12 +47,17 @@ class LanguageModel(nn.Module):
       embedding_dim=embedding_dimension
     )
 
-    self.blocks = nn.Sequential(
-      Block(embedding_dimension, num_heads=4, block_size=block_size),
-      Block(embedding_dimension, num_heads=4, block_size=block_size),
-      Block(embedding_dimension, num_heads=4, block_size=block_size),
-      nn.LayerNorm(embedding_dimension)
+    self.position_embedding_table = nn.Embedding(
+      num_embeddings=block_size,
+      embedding_dim=embedding_dimension
     )
+
+    self.blocks = nn.Sequential(*[
+      Block(embedding_dimension, num_heads, block_size=block_size) 
+      for _ in range(num_layers)
+    ])
+
+    self.ln_f = nn.LayerNorm(embedding_dimension)
 
     self.language_modeling_head = nn.Linear(
       in_features=embedding_dimension, 
@@ -57,11 +69,18 @@ class LanguageModel(nn.Module):
     input_indices: torch.Tensor,
     targets: torch.Tensor | None = None
   ) -> tuple[torch.Tensor, torch.Tensor | None]:
+    B, T = input_indices.shape
+
     token_embedding: torch.Tensor = self.token_embedding_table(input_indices)
 
-    context_aware_embedding: torch.Tensor = self.blocks(token_embedding)
+    position_embedding: torch.Tensor = self.position_embedding_table(torch.arange(T, device=input_indices.device))
 
-    logits: torch.Tensor = self.language_modeling_head(context_aware_embedding)
+    new_embedding = token_embedding + position_embedding
+
+    new_embedding = self.blocks(new_embedding)
+    new_embedding = self.ln_f(new_embedding)
+
+    logits: torch.Tensor = self.language_modeling_head(new_embedding)
 
     loss = None
 
