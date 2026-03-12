@@ -14,9 +14,15 @@ def parse_arguments():
   parser.add_argument('--train', action='store_true', help='Executar loop de treinamento')
   return parser.parse_args()
 
-def generate_sample(model: LanguageModel, tokenizer: Tokenizer, max_new_tokens: int = 100) -> str:
+def generate_sample(model: LanguageModel, tokenizer: Tokenizer, prompt: str = "", max_new_tokens: int = 100) -> str:
   model.eval() 
-  initial_context = torch.zeros((1, 1), dtype=torch.long)
+  
+  if prompt:
+    context_list = tokenizer.encode(prompt)
+    initial_context = torch.tensor([context_list], dtype=torch.long)
+  else:
+    initial_context = torch.zeros((1, 1), dtype=torch.long)
+    
   generated_tokens = model.generate(initial_context, max_new_tokens)
   return tokenizer.decode(generated_tokens[0].tolist())
 
@@ -44,9 +50,9 @@ def main():
   args = parse_arguments()
   
   BLOCK_SIZE = 128
-  EMBED_DIM = 256
+  EMBED_DIM = 256 #256
   N_HEADS = 8
-  N_LAYERS = 6
+  N_LAYERS = 6 #6
 
   raw_data_path = f"data/raw/{args.file}"
   processed_data_path = f"data/processed/{args.target}"
@@ -69,10 +75,13 @@ def main():
   )
 
   if os.path.exists(model_weights_path):
-    print(f"\n[*] Cérebro encontrado! Carregando pesos de: {model_weights_path}")
+    print(f"\n[*] Modelo encontrado! Carregando pesos de: {model_weights_path}")
     model.load_state_dict(torch.load(model_weights_path))
   else:
-    print("\n[*] Cérebro não encontrado. Inicializando com pesos aleatórios.")
+    print("\n[*] Modelo não encontrado. Inicializando com pesos aleatórios.")
+
+  total_params = sum(p.numel() for p in model.parameters())
+  print(f"\n[*] Tamanho do Modelo: {total_params / 1e6:.2f} Milhões de parâmetros")
 
   if args.train:
     print("\n[*] Teste de Geração (Antes do treino) ---")
@@ -86,7 +95,10 @@ def main():
     print("\n[*] Modo de inferência. Pulando treinamento...")
 
   print("\n[*] --- Teste de Geração Final ---")
-  print(generate_sample(model, tokenizer, max_new_tokens=200))
+
+  prompt = "[User]: qual seu nome?\n[Agent]:"
+  
+  print(generate_sample(model, tokenizer, prompt, max_new_tokens=50))
 
 if __name__ == "__main__":
   main()
