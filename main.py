@@ -28,16 +28,14 @@ def generate_sample(model: LanguageModel, tokenizer: BPETokenizer, prompt: str =
   generated_tokens = model.generate(initial_context, max_new_tokens)
   return tokenizer.decode(generated_tokens[0].tolist())
 
-def train_model(model: LanguageModel, loader: DataLoader, weights_path: str, steps: int = 1000, lr: float = 1e-4) -> None:
+def train_model(model: LanguageModel, base_model: LanguageModel, loader: DataLoader, weights_path: str, steps: int = 1000, lr: float = 1e-4) -> None:
   print(f"\n[*] --- Iniciando Treinamento ({steps} passos) ---")
   optimizer = optim.AdamW(model.parameters(), lr=lr)
-  
-  model.train() 
+  model.train()
   
   for step in range(1, steps + 1):
     xb, yb = loader.get_batch(split="train")
     logits, loss = model(xb, yb)
-    
     optimizer.zero_grad(set_to_none=True)
     loss.backward()
     optimizer.step()
@@ -47,8 +45,8 @@ def train_model(model: LanguageModel, loader: DataLoader, weights_path: str, ste
     
     if step % 500 == 0:
       print(f"[*] {step} passos atingidos. Salvando checkpoint em {weights_path}...")
-      torch.save(model.state_dict(), weights_path)
-          
+      torch.save(base_model.state_dict(), weights_path)
+  
   print("\n[*] --- Treinamento Concluído! ---")
   print(f"[*] Loss Final: {loss.item():.4f}")
 
@@ -57,8 +55,8 @@ def main():
 
   config = ModelConfig(
     name=args.model,
-    precision="fp32",
-    head_precision="fp32",
+    precision="b1.58",
+    head_precision="b1.58",
     device="cpu"
   )
 
@@ -102,6 +100,9 @@ def main():
   else:
     print(f"\n[*] Modelo {args.model} não encontrado. Inicializando do zero.")
 
+  base_model = model
+  model = torch.compile(model)
+
   total_params = sum(p.numel() for p in model.parameters())
   print(f"[*] Tamanho do Modelo: {total_params / 1e6:.2f} Milhões de parâmetros")
 
@@ -109,10 +110,10 @@ def main():
     print("\n[*] Teste de Geração (Antes do treino) ---")
     print(generate_sample(model, tokenizer, max_new_tokens=50))
     
-    train_model(model, loader, model_weights_path, steps=args.steps)
+    train_model(model, base_model, loader, model_weights_path, steps=args.steps)
     
     print(f"\n[*] Salvando pesos finais em {model_weights_path}...")
-    torch.save(model.state_dict(), model_weights_path)
+    torch.save(base_model.state_dict(), model_weights_path)
   else:
     print("\n[*] Modo de inferência. Pulando treinamento...")
 

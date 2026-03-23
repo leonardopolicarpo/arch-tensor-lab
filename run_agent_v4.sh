@@ -32,7 +32,7 @@ fi
 echo ""
 echo "${VERDE}✔ Configurações carregadas!${RESET}"
 echo "Dataset : ${AZUL}chat_pro.txt${RESET}"
-echo "Modelo  : ${AZUL}agent_v3_weights.pt${RESET}"
+echo "Modelo  : ${AZUL}agent_v4_weights.pt${RESET}"
 
 if [ -n "$TRAIN_FLAG" ]; then
   echo "Ação    : ${VERMELHO}TREINAR (${PASSOS} passos)${RESET}"
