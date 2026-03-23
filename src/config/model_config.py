@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal
+from src.types.precision import Precision
 
 @dataclass
 class ModelConfig:
@@ -9,7 +10,7 @@ class ModelConfig:
   num_heads: int = 8
   num_layers: int = 6
 
-  precision: Literal["fp32", "fp16", "int4", "b1.58"] = "fp32"
+  precision: Precision = "fp32"
   device: Literal["cpu", "apu", "cuda"] = "cpu"
 
   name: str = "model"
