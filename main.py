@@ -80,7 +80,7 @@ def main():
   vocabulary_size = tokenizer.vocab_size
   loader = DataLoader(
     data_path=processed_data_path,
-    batch_size=32,
+    batch_size=config.batch_size,
     block_size=config.block_size
   )
   
