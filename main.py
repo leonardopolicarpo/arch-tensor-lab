@@ -5,6 +5,7 @@ import torch.optim as optim
 from src.data.bpe_tokenizer import BPETokenizer
 from src.data.loader import DataLoader
 from src.model.transformer import LanguageModel
+from src.config.model_config import ModelConfig
 
 def parse_arguments():
   parser = argparse.ArgumentParser()
@@ -53,19 +54,19 @@ def train_model(model: LanguageModel, loader: DataLoader, weights_path: str, ste
 
 def main():
   args = parse_arguments()
-  
-  BLOCK_SIZE = 128
-  EMBED_DIM = 256
-  N_HEADS = 8
-  N_LAYERS = 6
-  VOCAB_SIZE = 5000
+
+  config = ModelConfig(
+    name=args.model,
+    precision="fp32",
+    device="cpu"
+  )
 
   raw_data_path = f"data/raw/{args.file}"
   processed_data_path = f"data/processed/{args.target}"
   model_weights_path = f"data/processed/{args.model}_weights.pt"
   vocab_path = "data/processed/bpe_vocab.json"
 
-  tokenizer = BPETokenizer(vocab_size=VOCAB_SIZE)
+  tokenizer = BPETokenizer(vocab_size=config.vocab_size)
   
   if not os.path.exists(vocab_path):
     print(f"[*] Vocabulário não encontrado. Treinando BPE...")
@@ -78,14 +79,18 @@ def main():
     tokenizer.save_data(raw_data_path, processed_data_path)
   
   vocabulary_size = tokenizer.vocab_size
-  loader = DataLoader(data_path=processed_data_path, batch_size=32, block_size=BLOCK_SIZE)
+  loader = DataLoader(
+    data_path=processed_data_path,
+    batch_size=32,
+    block_size=config.block_size
+  )
   
   model = LanguageModel(
     vocabulary_size,
-    embedding_dimension=EMBED_DIM,
-    block_size=BLOCK_SIZE,
-    num_heads=N_HEADS,
-    num_layers=N_LAYERS
+    embedding_dimension=config.embedding_dim,
+    block_size=config.block_size,
+    num_heads=config.num_heads,
+    num_layers=config.num_layers
   )
 
   if os.path.exists(model_weights_path):
