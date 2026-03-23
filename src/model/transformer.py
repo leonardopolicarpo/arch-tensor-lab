@@ -39,7 +39,8 @@ class LanguageModel(nn.Module):
       block_size: int = 128,
       num_heads: int = 8,
       num_layers: int = 6,
-      precision: Precision = "fp32"
+      precision: Precision = "fp32",
+      head_precision: Precision = "fp32"
     ) -> None:
     super().__init__()
 
@@ -62,9 +63,10 @@ class LanguageModel(nn.Module):
 
     self.ln_f = nn.LayerNorm(embedding_dimension)
 
-    self.language_modeling_head = nn.Linear(
-      in_features=embedding_dimension, 
-      out_features=vocabulary_size
+    self.language_modeling_head = make_linear(
+      in_features=embedding_dimension,
+      out_features=vocabulary_size,
+      precision=head_precision
     )
   
   def forward(

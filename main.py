@@ -10,8 +10,8 @@ from src.config.model_config import ModelConfig
 def parse_arguments():
   parser = argparse.ArgumentParser()
   parser.add_argument('--file', '-f', type=str, default='chat_pro.txt')
-  parser.add_argument('--target', '-t', type=str, default='agent_v3.pt')
-  parser.add_argument('--model', '-m', type=str, default='agent_v3')
+  parser.add_argument('--target', '-t', type=str, default='agent_v4.pt')
+  parser.add_argument('--model', '-m', type=str, default='agent_v4')
   parser.add_argument('--train', action='store_true', help='Executar loop de treinamento')
   parser.add_argument('--steps', '-s', type=int, default=2000, help='Quantidade de passos para treinar')
   return parser.parse_args()
@@ -58,6 +58,7 @@ def main():
   config = ModelConfig(
     name=args.model,
     precision="fp32",
+    head_precision="fp32",
     device="cpu"
   )
 
@@ -90,7 +91,9 @@ def main():
     embedding_dimension=config.embedding_dim,
     block_size=config.block_size,
     num_heads=config.num_heads,
-    num_layers=config.num_layers
+    num_layers=config.num_layers,
+    precision=config.precision,
+    head_precision=config.head_precision
   )
 
   if os.path.exists(model_weights_path):
